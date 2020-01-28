@@ -1,2 +1,3 @@
-# libs-mworlds
+# MmoTee-Libs
  
+Some libraries required for compilation MmoTee
