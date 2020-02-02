@@ -1,6 +1,8 @@
+// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
-*   Copyright (C) 1997-2011,2014 International Business Machines
+*   Copyright (C) 1997-2011,2014-2015 International Business Machines
 *   Corporation and others.  All Rights Reserved.
 *******************************************************************************
 *   Date        Name        Description
@@ -140,7 +142,7 @@ typedef struct UTransPosition {
     int32_t contextLimit;
     
     /**
-     * Beginning index, inclusive, of the text to be transliteratd.
+     * Beginning index, inclusive, of the text to be transliterated.
      * INPUT/OUTPUT parameter: This parameter is advanced past
      * characters that have already been transliterated by a
      * transliteration operation.
@@ -149,7 +151,7 @@ typedef struct UTransPosition {
     int32_t start;
     
     /**
-     * Ending index, exclusive, of the text to be transliteratd.
+     * Ending index, exclusive, of the text to be transliterated.
      * INPUT/OUTPUT parameter: This parameter is updated to reflect
      * changes in the length of the text, but points to the same
      * logical position in the text.
@@ -380,14 +382,14 @@ utrans_openIDs(UErrorCode *pErrorCode);
 U_STABLE void U_EXPORT2 
 utrans_trans(const UTransliterator* trans,
              UReplaceable* rep,
-             UReplaceableCallbacks* repFunc,
+             const UReplaceableCallbacks* repFunc,
              int32_t start,
              int32_t* limit,
              UErrorCode* status);
 
 /**
  * Transliterate the portion of the UReplaceable text buffer that can
- * be transliterated unambiguosly.  This method is typically called
+ * be transliterated unambiguously.  This method is typically called
  * after new text has been inserted, e.g. as a result of a keyboard
  * event.  The transliterator will try to transliterate characters of
  * <code>rep</code> between <code>index.cursor</code> and
@@ -431,7 +433,7 @@ utrans_trans(const UTransliterator* trans,
 U_STABLE void U_EXPORT2 
 utrans_transIncremental(const UTransliterator* trans,
                         UReplaceable* rep,
-                        UReplaceableCallbacks* repFunc,
+                        const UReplaceableCallbacks* repFunc,
                         UTransPosition* pos,
                         UErrorCode* status);
 
@@ -452,8 +454,7 @@ utrans_transIncremental(const UTransliterator* trans,
  * zero-terminated.  Upon return, the new length is stored in
  * *textLength.  If textLength is NULL then the string is assumed to
  * be zero-terminated.
- * @param textCapacity a pointer to the length of the text buffer.
- * Upon return, 
+ * @param textCapacity the length of the text buffer
  * @param start the beginning index, inclusive; <code>0 <= start <=
  * limit</code>.
  * @param limit pointer to the ending index, exclusive; <code>start <=
@@ -477,7 +478,7 @@ utrans_transUChars(const UTransliterator* trans,
 
 /**
  * Transliterate the portion of the UChar* text buffer that can be
- * transliterated unambiguosly.  See utrans_transIncremental().  The
+ * transliterated unambiguously.  See utrans_transIncremental().  The
  * string is passed in in a UChar* buffer.  The string is modified in
  * place.  If the result is longer than textCapacity, it is truncated.
  * The actual length of the result is returned in *textLength, if
@@ -509,7 +510,6 @@ utrans_transIncrementalUChars(const UTransliterator* trans,
                               UTransPosition* pos,
                               UErrorCode* status);
 
-#ifndef U_HIDE_DRAFT_API
 /**
  * Create a rule string that can be passed to utrans_openU to recreate this
  * transliterator.
@@ -525,9 +525,9 @@ utrans_transIncrementalUChars(const UTransliterator* trans,
  *                  contents of result are undefined.
  * @return int32_t   The length of the rule string (may be greater than resultLength,
  *                  in which case an error is returned).
- * @draft ICU 53
+ * @stable ICU 53
  */
-U_DRAFT int32_t U_EXPORT2
+U_STABLE int32_t U_EXPORT2
 utrans_toRules(     const UTransliterator* trans,
                     UBool escapeUnprintable,
                     UChar* result, int32_t resultLength,
@@ -550,14 +550,13 @@ utrans_toRules(     const UTransliterator* trans,
  * @return USet*    Either fillIn, or if fillIn is NULL, a pointer to a
  *                  newly-allocated USet that the user must close. In case of
  *                  error, NULL is returned.
- * @draft ICU 53
+ * @stable ICU 53
  */
-U_DRAFT USet* U_EXPORT2
+U_STABLE USet* U_EXPORT2
 utrans_getSourceSet(const UTransliterator* trans,
                     UBool ignoreFilter,
                     USet* fillIn,
                     UErrorCode* status);
-#endif  /* U_HIDE_DRAFT_API */
 
 /* deprecated API ----------------------------------------------------------- */
 

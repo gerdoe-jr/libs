@@ -1,6 +1,8 @@
+// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html
 /*
 **********************************************************************
-* Copyright (c) 2002-2013, International Business Machines
+* Copyright (c) 2002-2016, International Business Machines
 * Corporation and others.  All Rights Reserved.
 **********************************************************************
 */
@@ -13,11 +15,7 @@
 /**
  * \file 
  * \brief C API: Encapsulates information about a currency.
- */
-
-#if !UCONFIG_NO_FORMATTING
-
-/**
+ *
  * The ucurr API encapsulates information about a currency, as defined by
  * ISO 4217.  A currency is represented by a 3-character string
  * containing its ISO 4217 code.  This API can return various data
@@ -33,6 +31,37 @@
  * @author Alan Liu
  * @since ICU 2.2
  */
+
+#if !UCONFIG_NO_FORMATTING
+
+/**
+ * Currency Usage used for Decimal Format
+ * @stable ICU 54
+ */
+enum UCurrencyUsage {
+    /**
+     * a setting to specify currency usage which determines currency digit
+     * and rounding for standard usage, for example: "50.00 NT$"
+     * used as DEFAULT value
+     * @stable ICU 54
+     */
+    UCURR_USAGE_STANDARD=0,
+    /**
+     * a setting to specify currency usage which determines currency digit
+     * and rounding for cash usage, for example: "50 NT$"
+     * @stable ICU 54
+     */
+    UCURR_USAGE_CASH=1,
+#ifndef U_HIDE_DEPRECATED_API
+    /**
+     * One higher than the last enum UCurrencyUsage constant.
+     * @deprecated ICU 58 The numeric value may change over time, see ICU ticket #12420.
+     */
+    UCURR_USAGE_COUNT=2
+#endif  // U_HIDE_DEPRECATED_API
+};
+/** Currency Usage used for Decimal Format */
+typedef enum UCurrencyUsage UCurrencyUsage; 
 
 /**
  * Finds a currency code for the given locale.
@@ -74,7 +103,17 @@ typedef enum UCurrNameStyle {
      * currency, such as "US Dollar" for USD.
      * @stable ICU 2.6
      */
-    UCURR_LONG_NAME
+    UCURR_LONG_NAME,
+
+    /**
+     * Selector for getName() indicating the narrow currency symbol.
+     * The narrow currency symbol is similar to the regular currency
+     * symbol, but it always takes the shortest form: for example,
+     * "$" instead of "US$" for USD in en-CA.
+     *
+     * @stable ICU 61
+     */
+    UCURR_NARROW_SYMBOL_NAME
 } UCurrNameStyle;
 
 #if !UCONFIG_NO_SERVICE
@@ -120,14 +159,14 @@ ucurr_unregister(UCurrRegistryKey key, UErrorCode* status);
  * @param currency null-terminated 3-letter ISO 4217 code
  * @param locale locale in which to display currency
  * @param nameStyle selector for which kind of name to return
- * @param isChoiceFormat fill-in set to TRUE if the returned value
- * is a ChoiceFormat pattern; otherwise it is a static string
+ * @param isChoiceFormat always set to FALSE, or can be NULL;
+ *     display names are static strings;
+ *     since ICU 4.4, ChoiceFormat patterns are no longer supported
  * @param len fill-in parameter to receive length of result
  * @param ec error code
  * @return pointer to display string of 'len' UChars.  If the resource
  * data contains no entry for 'currency', then 'currency' itself is
- * returned.  If *isChoiceFormat is TRUE, then the result is a
- * ChoiceFormat pattern.  Otherwise it is a static string.
+ * returned.
  * @stable ICU 2.6
  */
 U_STABLE const UChar* U_EXPORT2
@@ -144,14 +183,15 @@ ucurr_getName(const UChar* currency,
  * currency object in the en_US locale is "US dollar" or "US dollars".
  * @param currency null-terminated 3-letter ISO 4217 code
  * @param locale locale in which to display currency
- * @param isChoiceFormat fill-in set to TRUE if the returned value
- * is a ChoiceFormat pattern; otherwise it is a static string
+ * @param isChoiceFormat always set to FALSE, or can be NULL;
+ *     display names are static strings;
+ *     since ICU 4.4, ChoiceFormat patterns are no longer supported
  * @param pluralCount plural count
  * @param len fill-in parameter to receive length of result
  * @param ec error code
  * @return pointer to display string of 'len' UChars.  If the resource
  * data contains no entry for 'currency', then 'currency' itself is
- * returned.  
+ * returned.
  * @stable ICU 4.2
  */
 U_STABLE const UChar* U_EXPORT2
@@ -165,6 +205,14 @@ ucurr_getPluralName(const UChar* currency,
 /**
  * Returns the number of the number of fraction digits that should
  * be displayed for the given currency.
+ * This is equivalent to ucurr_getDefaultFractionDigitsForUsage(currency,UCURR_USAGE_STANDARD,ec);
+ *
+ * Important: The number of fraction digits for a given currency is NOT
+ * guaranteed to be constant across versions of ICU or CLDR. For example,
+ * do NOT use this value as a mechanism for deciding the magnitude used
+ * to store currency values in a database. You should use this value for
+ * display purposes only.
+ *
  * @param currency null-terminated 3-letter ISO 4217 code
  * @param ec input-output error code
  * @return a non-negative number of fraction digits to be
@@ -176,8 +224,31 @@ ucurr_getDefaultFractionDigits(const UChar* currency,
                                UErrorCode* ec);
 
 /**
+ * Returns the number of the number of fraction digits that should
+ * be displayed for the given currency with usage.
+ *
+ * Important: The number of fraction digits for a given currency is NOT
+ * guaranteed to be constant across versions of ICU or CLDR. For example,
+ * do NOT use this value as a mechanism for deciding the magnitude used
+ * to store currency values in a database. You should use this value for
+ * display purposes only.
+ *
+ * @param currency null-terminated 3-letter ISO 4217 code
+ * @param usage enum usage for the currency
+ * @param ec input-output error code
+ * @return a non-negative number of fraction digits to be
+ * displayed, or 0 if there is an error
+ * @stable ICU 54
+ */
+U_STABLE int32_t U_EXPORT2
+ucurr_getDefaultFractionDigitsForUsage(const UChar* currency, 
+                                       const UCurrencyUsage usage,
+                                       UErrorCode* ec);
+
+/**
  * Returns the rounding increment for the given currency, or 0.0 if no
  * rounding is done by the currency.
+ * This is equivalent to ucurr_getRoundingIncrementForUsage(currency,UCURR_USAGE_STANDARD,ec);
  * @param currency null-terminated 3-letter ISO 4217 code
  * @param ec input-output error code
  * @return the non-negative rounding increment, or 0.0 if none,
@@ -187,6 +258,21 @@ ucurr_getDefaultFractionDigits(const UChar* currency,
 U_STABLE double U_EXPORT2
 ucurr_getRoundingIncrement(const UChar* currency,
                            UErrorCode* ec);
+
+/**
+ * Returns the rounding increment for the given currency, or 0.0 if no
+ * rounding is done by the currency given usage.
+ * @param currency null-terminated 3-letter ISO 4217 code
+ * @param usage enum usage for the currency
+ * @param ec input-output error code
+ * @return the non-negative rounding increment, or 0.0 if none,
+ * or 0.0 if there is an error
+ * @stable ICU 54
+ */
+U_STABLE double U_EXPORT2
+ucurr_getRoundingIncrementForUsage(const UChar* currency,
+                                   const UCurrencyUsage usage,
+                                   UErrorCode* ec);
 
 /**
  * Selector constants for ucurr_openCurrencies().
@@ -235,7 +321,7 @@ typedef enum UCurrCurrencyType {
  * Provides a UEnumeration object for listing ISO-4217 codes.
  * @param currType You can use one of several UCurrCurrencyType values for this
  *      variable. You can also | (or) them together to get a specific list of
- *      currencies. Most people will want to use the (UCURR_CURRENCY|UCURR_NON_DEPRECATED) value to
+ *      currencies. Most people will want to use the (UCURR_COMMON|UCURR_NON_DEPRECATED) value to
  *      get a list of current currencies.
  * @param pErrorCode Error code
  * @stable ICU 3.2

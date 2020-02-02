@@ -1,3 +1,5 @@
+// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html
 /*
 **********************************************************************
 *   Copyright (C) 2001-2014 International Business Machines
@@ -15,7 +17,13 @@
 #ifndef USTREAM_H
 #define USTREAM_H
 
+#include "unicode/utypes.h"
+
+#if U_SHOW_CPLUSPLUS_API
+
 #include "unicode/unistr.h"
+
+#if !UCONFIG_NO_CONVERSION  // not available without conversion
 
 /**
  * \file
@@ -26,17 +34,11 @@
  * C++ I/O stream API.
  */
 
-#if !defined(_MSC_VER)
+#if defined(__GLIBCXX__)
 namespace std { class type_info; } // WORKAROUND: http://llvm.org/bugs/show_bug.cgi?id=13364
 #endif
 
-#if U_IOSTREAM_SOURCE >= 199711
-#if (__GNUC__ == 2)
 #include <iostream>
-#else
-#include <istream>
-#include <ostream>
-#endif
 
 U_NAMESPACE_BEGIN
 
@@ -61,5 +63,7 @@ U_NAMESPACE_END
 #endif
 
 /* No operator for UChar because it can conflict with wchar_t  */
+
+#endif /* U_SHOW_CPLUSPLUS_API */
 
 #endif
