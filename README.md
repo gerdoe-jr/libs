@@ -1,3 +1,3 @@
-# MmoTee-Libs
+# libs, based on mmotee
  
-Some libraries required for compilation MmoTee
+Libraries required for 2xp compilation.
